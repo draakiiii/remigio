@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Partidas de Remigio</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestor de Partidas de Remigio</h1>
+        <div id="home" class="button-group">
+            <button id="newGameButton" class="btn">Nueva Partida</button>
+            <button id="pastGamesButton" class="btn">Partidas Anteriores</button>
+        </div>
+        <div id="newGame" class="form-container" style="display: none;">
+            <form id="gameForm">
+                <div class="input-group">
+                    <label for="date">Fecha:</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="input-group">
+                    <label for="players">Jugadores (separados por comas):</label>
+                    <input type="text" id="players" required>
+                </div>
+                <button type="submit" class="btn">Iniciar Partida</button>
+            </form>
+        </div>
+        <div id="gameContainer" style="display: none;">
+            <button onclick="exportToPDF()" class="btn">Exportar a PDF</button>
+        </div>
+        <div id="pastGames" style="display: none;"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
