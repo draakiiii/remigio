@@ -100,19 +100,42 @@ function displayCurrentGame() {
             }
         });
 
+        const buttonSubmitContainer = document.createElement('div');
+        buttonSubmitContainer.style.display = 'flex';
+        buttonSubmitContainer.style.flexDirection = 'column';
+        buttonSubmitContainer.style.gap = '10px';
+        roundForm.appendChild(buttonSubmitContainer);
+
         const submitButton = document.createElement('button');
         submitButton.type = 'submit';
         submitButton.textContent = 'Agregar Ronda';
-        roundForm.appendChild(submitButton);
+        buttonSubmitContainer.appendChild(submitButton);
 
         gameContainer.appendChild(roundForm);
     }
 
-    // Añadir botón para leer puntuaciones
-    const readScoresButton = document.createElement('button');
-    readScoresButton.textContent = 'Leer Puntuaciones';
-    readScoresButton.onclick = readScores;
-    gameContainer.appendChild(readScoresButton);
+            // Crear un contenedor para los botones que permitirá alinearlos verticalmente
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.flexDirection = 'column';
+            buttonsContainer.style.gap = '10px';
+
+            // Añadir botón para exportar a CSV
+            const exportButton = document.createElement('button');
+            exportButton.textContent = 'Exportar a CSV';
+            exportButton.onclick = exportToCSV;
+            buttonsContainer.appendChild(exportButton);
+    
+            // Añadir botón para leer puntuaciones
+            const readScoresButton = document.createElement('button');
+            readScoresButton.textContent = 'Leer Puntuaciones';
+            readScoresButton.onclick = readScores;
+            buttonsContainer.appendChild(readScoresButton);
+
+            // Añadir el contenedor de botones al contenedor del juego
+            gameContainer.appendChild(buttonsContainer);
+
+
 }
 
 function addRound(event) {
@@ -215,12 +238,12 @@ function displayPastGames() {
 }
 
 function readScores() {
-    let scoresText = '';
-    currentGame.players.forEach(player => {
-        if (player.totalPoints < 151) {
-            scoresText += `${player.name} tiene ${player.totalPoints} puntos. `;
-        }
-    });
+    // Construir una cadena con las puntuaciones totales de forma resumida
+    let scoresText = 'Puntuaciones totales: ';
+    scoresText += currentGame.players
+        .filter(player => player.totalPoints < 151)
+        .map(player => `${player.name}, ${player.totalPoints} puntos`)
+        .join(', ') + '. ';
 
     // Determinar quién va ganando y quién va perdiendo
     let winningPlayer = null;
@@ -242,12 +265,42 @@ function readScores() {
     });
 
     if (winningPlayer) {
-        scoresText += `Va ganando ${winningPlayer.name}, `;
+        scoresText += `Va ganando ${winningPlayer.name} con ${winningPlayer.totalPoints} puntos y `;
     }
     if (losingPlayer) {
-        scoresText += `va perdiendo ${losingPlayer.name}.`;
+        scoresText += `va perdiendo ${losingPlayer.name} con ${losingPlayer.totalPoints} puntos.`;
     }
 
     const msg = new SpeechSynthesisUtterance(scoresText);
     window.speechSynthesis.speak(msg);
 }
+
+function exportToCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Jugador,";
+
+    // Añadir encabezados de rondas
+    const maxRounds = Math.max(...currentGame.players.map(p => p.points.length));
+    for (let i = 0; i < maxRounds; i++) {
+        csvContent += `Ronda ${i + 1},`;
+    }
+    csvContent += "Total Puntos\n";
+
+    // Añadir datos de jugadores
+    currentGame.players.forEach(player => {
+        csvContent += `${player.name},`;
+        player.points.forEach(points => {
+            csvContent += `${points},`;
+        });
+        csvContent += `${player.totalPoints}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "partida_remigio.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
