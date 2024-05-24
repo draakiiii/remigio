@@ -105,6 +105,11 @@ th {
     background-color: #f2f2f2;
 }
 
+.round-loser {
+    background-color: #f44336; /* Rojo */
+    color: white;
+}
+
 .round-winner {
     background-color: #4CAF50;
     color: white;

@@ -57,6 +57,14 @@ function displayCurrentGame() {
                 pointCell.classList.add('round-winner');
             }
 
+            // Calcular puntos totales hasta esta ronda
+            let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => acc + curr, 0);
+
+            // Si los puntos totales superan 150 en esta ronda, aplicar la clase 'round-loser'
+            if (totalPointsUpToThisRound >= 151) {
+                pointCell.classList.add('round-loser');
+            }
+
             roundRow.appendChild(pointCell);
         });
         table.appendChild(roundRow);
@@ -168,11 +176,14 @@ function checkWinCondition() {
     const remainingPlayers = currentGame.players.filter(player => player.totalPoints < 151);
 
     if (remainingPlayers.length === 1) {
+        // Oculta el formulario de entrada de puntos
+        const form = document.querySelector('form');
+        if (form) {
+            form.style.display = 'none';
+        }
+
         const winner = remainingPlayers[0];
         alert(`¡${winner.name} ha ganado la partida!`);
-        document.querySelector('form').style.display = 'none'; // Oculta solo el formulario de nueva ronda
-    } else if (remainingPlayers.length === 0) {
-        alert('¡Empate! Todos los jugadores han alcanzado 151 puntos.');
         document.querySelector('form').style.display = 'none'; // Oculta solo el formulario de nueva ronda
     }
 }   
