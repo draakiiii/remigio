@@ -1,4 +1,3 @@
-// script.js
 document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
 document.getElementById('pastGamesButton').addEventListener('click', showPastGames);
 document.getElementById('gameForm').addEventListener('submit', startNewGame);
@@ -61,7 +60,7 @@ function displayCurrentGame() {
             let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => acc + curr, 0);
 
             // Si los puntos totales superan 150 en esta ronda, aplicar la clase 'round-loser'
-            if (totalPointsUpToThisRound >= 151) {
+            if (totalPointsUpToThisRound >= 151 && player.points[i] !== '---') {
                 pointCell.classList.add('round-loser');
             }
 
@@ -69,6 +68,24 @@ function displayCurrentGame() {
         });
         table.appendChild(roundRow);
     }
+
+    const newRoundRow = document.createElement('tr');
+    newRoundRow.innerHTML = `<td>Ronda ${currentGame.rounds.length + 1}</td>`;
+    currentGame.players.forEach((player, playerIndex) => {
+        const inputCell = document.createElement('td');
+        if (player.totalPoints >= 151) {
+            inputCell.textContent = '---';
+        } else {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = `player${playerIndex + 1}`;
+            input.required = true;
+            input.min = 0;
+            inputCell.appendChild(input);
+        }
+        newRoundRow.appendChild(inputCell);
+    });
+    table.appendChild(newRoundRow);
 
     const totalRow = document.createElement('tr');
     totalRow.innerHTML = '<td>Total</td>';
@@ -87,63 +104,40 @@ function displayCurrentGame() {
 
     gameContainer.appendChild(table);
 
-    // Añadir el formulario para nuevas rondas solo si la partida no ha terminado
-    if (currentGame.players.some(player => player.totalPoints < 151)) {
-        const roundForm = document.createElement('form');
-        roundForm.addEventListener('submit', addRound);
-
-        currentGame.players.forEach((player, index) => {
-            if (player.totalPoints < 151) {
-                const label = document.createElement('label');
-                label.textContent = player.name;
-                label.setAttribute('for', `player${index + 1}`);
-                roundForm.appendChild(label);
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.id = `player${index + 1}`;
-                input.required = true;
-                input.min = 0;
-                roundForm.appendChild(input);
-            }
-        });
-
+        // Añadir el botón "Agregar Ronda" dentro de la tabla
         const buttonSubmitContainer = document.createElement('div');
         buttonSubmitContainer.style.display = 'flex';
         buttonSubmitContainer.style.flexDirection = 'column';
         buttonSubmitContainer.style.gap = '10px';
-        roundForm.appendChild(buttonSubmitContainer);
-
-        const submitButton = document.createElement('button');
-        submitButton.type = 'submit';
-        submitButton.textContent = 'Agregar Ronda';
-        buttonSubmitContainer.appendChild(submitButton);
-
-        gameContainer.appendChild(roundForm);
-    }
-
-            // Crear un contenedor para los botones que permitirá alinearlos verticalmente
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.style.display = 'flex';
-            buttonsContainer.style.flexDirection = 'column';
-            buttonsContainer.style.gap = '10px';
-
-            // Añadir botón para exportar a CSV
-            const exportButton = document.createElement('button');
-            exportButton.textContent = 'Exportar a CSV';
-            exportButton.onclick = exportToCSV;
-            buttonsContainer.appendChild(exportButton);
     
-            // Añadir botón para leer puntuaciones
-            const readScoresButton = document.createElement('button');
-            readScoresButton.textContent = 'Leer Puntuaciones';
-            readScoresButton.onclick = readScores;
-            buttonsContainer.appendChild(readScoresButton);
+        const submitButton = document.createElement('button');
+        submitButton.type = 'button'; // Cambiar a 'button' para evitar el comportamiento de formulario
+        submitButton.textContent = 'Agregar Ronda';
+        submitButton.addEventListener('click', addRound); // Añadir el evento click
+        buttonSubmitContainer.appendChild(submitButton);
+    
+        gameContainer.appendChild(buttonSubmitContainer);
 
-            // Añadir el contenedor de botones al contenedor del juego
-            gameContainer.appendChild(buttonsContainer);
+    // Crear un contenedor para los botones que permitirá alinearlos verticalmente
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.display = 'flex';
+    buttonsContainer.style.flexDirection = 'column';
+    buttonsContainer.style.gap = '10px';
 
+    // Añadir botón para exportar a CSV
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Exportar a CSV';
+    exportButton.onclick = exportToCSV;
+    buttonsContainer.appendChild(exportButton);
 
+    // Añadir botón para leer puntuaciones
+    const readScoresButton = document.createElement('button');
+    readScoresButton.textContent = 'Leer Puntuaciones';
+    readScoresButton.onclick = readScores;
+    buttonsContainer.appendChild(readScoresButton);
+
+    // Añadir el contenedor de botones al contenedor del juego
+    gameContainer.appendChild(buttonsContainer);
 }
 
 function addRound(event) {
@@ -186,66 +180,6 @@ function checkWinCondition() {
         alert(`¡${winner.name} ha ganado la partida!`);
         document.querySelector('form').style.display = 'none'; // Oculta solo el formulario de nueva ronda
     }
-}   
-
-function displayPastGames() {
-    const pastGamesContainer = document.getElementById('pastGames');
-    pastGamesContainer.innerHTML = '';
-
-    games.forEach(game => {
-        const gameDiv = document.createElement('div');
-        gameDiv.classList.add('game');
-
-        const dateDiv = document.createElement('div');
-        dateDiv.textContent = `Fecha: ${game.date}`;
-        gameDiv.appendChild(dateDiv);
-
-        const table = document.createElement('table');
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = '<th>Jugador</th>';
-        game.rounds.forEach((round, index) => {
-            headerRow.innerHTML += `<th>Ronda ${index + 1}</th>`;
-        });
-        headerRow.innerHTML += '<th>Total Puntos</th>';
-        table.appendChild(headerRow);
-
-        game.players.forEach(player => {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${player.name}</td>`;
-            game.rounds.forEach(round => {
-                const playerRound = round.find(r => r.name === player.name);
-                const points = playerRound ? playerRound.points : '-';
-                const cell = document.createElement('td');
-                cell.textContent = points;
-                if (points === 0) {
-                    cell.classList.add('round-winner');
-                }
-                row.appendChild(cell);
-            });
-            const totalPointsCell = document.createElement('td');
-            totalPointsCell.textContent = player.totalPoints;
-            if (player.totalPoints >= 151) {
-                totalPointsCell.classList.add('loser');
-            } else if (player.totalPoints < 151 && game.players.every(p => p.totalPoints >= 151 || p === player)) {
-                totalPointsCell.classList.add('winner');
-            }
-            row.appendChild(totalPointsCell);
-            table.appendChild(row);
-        });
-
-        // Añadir fila de puntuación total
-        const totalRow = document.createElement('tr');
-        totalRow.innerHTML = '<td>Total</td>';
-        game.players.forEach(player => {
-            const totalCell = document.createElement('td');
-            totalCell.textContent = player.totalPoints;
-            totalRow.appendChild(totalCell);
-        });
-        table.appendChild(totalRow);
-
-        gameDiv.appendChild(table);
-        pastGamesContainer.appendChild(gameDiv);
-    });
 }
 
 function readScores() {
@@ -314,4 +248,3 @@ function exportToCSV() {
     link.click();
     document.body.removeChild(link);
 }
-

@@ -143,3 +143,16 @@ th {
 #pastGames {
     margin-top: 20px;
 }
+
+table input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: border-color 0.3s;
+}
+
+table input[type="number"]:focus {
+    border-color: #4CAF50;
+}
