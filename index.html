@@ -40,7 +40,7 @@
                 <span class="close">&times;</span>
                 <h2>Introduce tu API Key de OpenAI para recibir comentarios personalizados</h2>
                 <input type="text" id="apiKeyInput" placeholder="API Key">
-                <input type="text" id="aiPromptInput" placeholder="Tipo de mensaje (por defecto: 'humor negro')">
+                <input type="text" id="aiPromptInput" placeholder="Tipo de mensaje (por defecto: 'informativo')">
                 <button id="saveApiKeyButton" class="btn">Guardar API Key y Preferencia</button>
             </div>
         </div>
@@ -87,7 +87,7 @@
     
         saveBtn.onclick = function() {
             const apiKey = document.getElementById('apiKeyInput').value;
-            const aiPrompt = document.getElementById('aiPromptInput').value || "mensajes groseros";
+            const aiPrompt = document.getElementById('aiPromptInput').value || "Informativo. Haz un resumen de cómo va la partida de forma divertida, puedes hacer bromas de todo tipo.";
             localStorage.setItem('openaiApiKey', apiKey);
             localStorage.setItem('aiPrompt', aiPrompt);
             modal.style.display = "none";
