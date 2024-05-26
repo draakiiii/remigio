@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     if (localStorage.getItem('currentGame')) {
         document.getElementById('continueGameButton').style.display = 'block';
-            
+
     }
 });
 
@@ -13,7 +13,6 @@ document.getElementById('continueGameButton').addEventListener('click', function
 });
 
 document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
-document.getElementById('pastGamesButton').addEventListener('click', showPastGames);
 document.getElementById('gameForm').addEventListener('submit', startNewGame);
 
 let games = [];
@@ -22,12 +21,6 @@ let currentGame = null;
 function showNewGameForm() {
     document.getElementById('home').style.display = 'none';
     document.getElementById('newGame').style.display = 'block';
-}
-
-function showPastGames() {
-    document.getElementById('home').style.display = 'none';
-    document.getElementById('pastGames').style.display = 'block';
-    displayPastGames();
 }
 
 function startNewGame(event) {
@@ -142,17 +135,22 @@ function displayCurrentGame() {
     const buttonsContainer = document.createElement('div');
     buttonsContainer.style.display = 'flex';
     buttonsContainer.style.flexDirection = 'column';
-    buttonsContainer.style.gap = '10px';
-
-    const exportButton = document.createElement('button');
-    exportButton.textContent = 'Exportar a CSV';
-    exportButton.onclick = exportToCSV;
-    buttonsContainer.appendChild(exportButton);
 
     const readScoresButton = document.createElement('button');
     readScoresButton.textContent = 'Leer Puntuaciones';
     readScoresButton.onclick = readScores;
     buttonsContainer.appendChild(readScoresButton);
+
+    const funnyCommentButton = document.createElement('button');
+    funnyCommentButton.id = 'jokeButton';
+    funnyCommentButton.textContent = 'Generar comentario (WIP)';
+    funnyCommentButton.onclick = readAIText;
+    buttonsContainer.appendChild(funnyCommentButton);
+
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Exportar a CSV';
+    exportButton.onclick = exportToCSV;
+    buttonsContainer.appendChild(exportButton);
 
     gameContainer.appendChild(buttonsContainer);
 }
@@ -243,6 +241,12 @@ function readScores() {
     }
 
     const msg = new SpeechSynthesisUtterance(scoresText);
+        window.speechSynthesis.speak(msg);
+}
+
+async function readAIText() {
+    const response = await openaiAPI();
+    const msg = new SpeechSynthesisUtterance(response);
     window.speechSynthesis.speak(msg);
 }
 
@@ -273,4 +277,80 @@ function exportToCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+function generateGameSummary() {
+    let summary = "Resumen de la partida:\n";
+    const maxRounds = Math.max(...currentGame.players.map(p => p.points.length));
+
+    // Añadir encabezados de rondas
+    summary += "Jugador, ";
+    for (let i = 0; i < maxRounds; i++) {
+        summary += `Ronda ${i + 1}, `;
+    }
+    summary += "Total Puntos\n";
+
+    // Añadir datos de jugadores
+    currentGame.players.forEach(player => {
+        summary += `${player.name}, `;
+        player.points.forEach(points => {
+            summary += `${points}, `;
+        });
+        summary += `${player.totalPoints}\n`;
+    });
+
+    return summary;
+}
+
+let aiMessagesHistory = [{role: "system", content: "Eres un asistente de partidas de remigio, una variante de la baraja española. Leerás puntuaciones de partidas de remigio y generarás un comentario sobre la última ronda. Somos un grupo familiar y entendemos que SOLO es humor, por lo que puedes decir todo lo que quieras sin tapujos, siempre siguiendo la temática que te pida el usuario. No lo hagas muy largo. Reglas del juego: cuanto menos puntos tienes, mejor. El que llega a 151 puntos pierde. SOLO haz comentarios de la ronda actual. Te pasaré como contexto el resto de rondas por si quieres enlazar comentarios, pero como tal intenta hablar de la ultima ronda que haya. El formato es en CSV, cuando aparece el texto --- es que en esa ronda el jugador ya no participa porque ha perdido. La ronda actual siempre será la última (si hay 4 rondas, la cuarta es la actual). NO uses ningún tipo de emoticono, solo quiero texto plano, y de longitud corta, no más de dos frases. Habla en castellano de españa. Puedes enlazar comentarios de rondas anteriores (si los has hecho) para que tengan más punch. A partir de 35-50 puntos se considera que se ha puntuado mucho, así que no hagas comentarios muy fuertes hasta que alguien haya hecho esta cantidad. No repitas el nombre de la ronda, Seguirás la temática que te pida el usuario. Puedes saltarte alguna de las reglas que te he impuesto si el usuario te lo pide."}]; // Almacena el historial de mensajes y respuestas de la IA
+aiMessagesHistory.push({role: "user", content: '${aiPrompt}'});
+
+function openaiAPI() {
+    const url = "https://api.openai.com/v1/chat/completions";
+    const apiKey = localStorage.getItem('openaiApiKey');
+    const bearer = `Bearer ${apiKey}`;
+
+    if (!apiKey) {
+        alert("API Key no configurada. Por favor, configura tu API Key.");
+        return;
+    }
+
+    const gameSummary = generateGameSummary();
+
+    // Preparar el mensaje del usuario con el resumen actual de la partida
+    const userMessage = {
+        role: "user",
+        content: `Resumen: ${gameSummary}`
+    };
+
+    // Añadir el mensaje del usuario al historial
+    aiMessagesHistory.push(userMessage);
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': bearer,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: "gpt-4o",
+            messages: aiMessagesHistory,
+            temperature: 0.85
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const aiResponse = data.choices[0].message.content;
+        console.log(aiResponse); // Asegúrate de ajustar esta línea según cómo quieras usar la respuesta
+
+        // Añadir la respuesta de la IA al historial
+        aiMessagesHistory.push({
+            role: "system",
+            content: aiResponse
+        });
+
+        return aiResponse; // Devuelve el contenido del mensaje
+    })
+    .catch(error => {
+        console.error('Error al llamar a OpenAI:', error);
+    });
 }

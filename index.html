@@ -13,7 +13,6 @@
         <div id="home" class="button-group">
             <button id="newGameButton" class="btn">Nueva Partida</button>
             <button id="continueGameButton" class="btn" style="display: none;">Continuar Partida</button>
-            <button id="pastGamesButton" class="btn" title="Próximamente" disabled>Partidas Anteriores (WIP)</button>
         </div>
         <div id="newGame" class="form-container" style="display: none;">
             <form id="gameForm">
@@ -35,7 +34,75 @@
         <div id="gameContainer" style="display: none;">
         </div>
         <div id="pastGames" style="display: none;"></div>
+
+        <div id="apiKeyModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Introduce tu API Key de OpenAI para recibir comentarios personalizados</h2>
+                <input type="text" id="apiKeyInput" placeholder="API Key">
+                <input type="text" id="aiPromptInput" placeholder="Tipo de mensaje (por defecto: 'humor negro')">
+                <button id="saveApiKeyButton" class="btn">Guardar API Key y Preferencia</button>
+            </div>
+        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
+
+<script>
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const dateInput = document.getElementById('date');
+        const today = new Date().toISOString().split('T')[0]; // Obtener la fecha actual y formatearla para el input
+        dateInput.value = today; // Establecer la fecha actual como valor predeterminado
+
+        const modal = document.getElementById('apiKeyModal');
+        const btn = document.getElementById('newGameButton');
+        const span = document.getElementsByClassName("close")[0];
+        const saveBtn = document.getElementById('saveApiKeyButton');
+    
+        // Función para verificar si mostrar o no el modal
+        function checkAndDisplayModal() {
+            if (!localStorage.getItem('openaiApiKey')) {
+                modal.style.display = "block";
+            } else {
+                modal.style.display = "none"; // Asegúrate de que el modal no se muestre si la API Key ya está guardada
+            }
+        }
+    
+        // Verificar al cargar la página
+        checkAndDisplayModal();
+    
+        btn.onclick = function() {
+            checkAndDisplayModal(); // Verificar cada vez que se pulsa el botón "Nueva Partida"
+        }
+    
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+    
+        saveBtn.onclick = function() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            const aiPrompt = document.getElementById('aiPromptInput').value || "mensajes groseros";
+            localStorage.setItem('openaiApiKey', apiKey);
+            localStorage.setItem('aiPrompt', aiPrompt);
+            modal.style.display = "none";
+    
+            // Añadir el mensaje de sistema inicial al historial
+            aiMessagesHistory.push({
+                role: "system",
+                content: `El sistema está configurado para generar ${aiPrompt}.`
+            });
+        }
+    
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    });
+    </script>
