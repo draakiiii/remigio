@@ -12,7 +12,6 @@
         <h1>Gestor de Partidas de Remigio</h1>
         <div id="home" class="button-group">
             <button id="newGameButton" class="btn">Nueva Partida</button>
-            <!-- Botón de partidas anteriores con tooltip de proximamente y estilo que no aparezca cursor-->
             <button id="pastGamesButton" class="btn" title="Próximamente" disabled>Partidas Anteriores (WIP)</button>
         </div>
         <div id="newGame" class="form-container" style="display: none;">
@@ -24,6 +23,10 @@
                 <div class="input-group">
                     <label for="players">Jugadores (separados por comas):</label>
                     <input type="text" id="players" required>
+                </div>
+                <div class="input-group">
+                    <label for="maxPoints">Puntuación Máxima:</label>
+                    <input type="number" id="maxPoints" value="150" required>
                 </div>
                 <button type="submit" class="btn">Iniciar Partida</button>
             </form>

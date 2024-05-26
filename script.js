@@ -20,8 +20,10 @@ function startNewGame(event) {
     event.preventDefault();
     const date = document.getElementById('date').value;
     const playerNames = document.getElementById('players').value.split(',').map(name => name.trim());
+    const maxPoints = parseInt(document.getElementById('maxPoints').value) + 1; // Este es el valor real, perderán cuando lleguen a esta puntuación
+    const maxPointsText = parseInt(document.getElementById('maxPoints').value); // Este es el valor que se muestra en el juego
     const players = playerNames.map(name => ({ name, points: [], totalPoints: 0 }));
-    currentGame = { date, players, rounds: [] };
+    currentGame = { date, players, rounds: [], maxPoints, maxPointsText };
     games.push(currentGame);
     document.getElementById('newGame').style.display = 'none';
     document.getElementById('gameContainer').style.display = 'block';
@@ -30,7 +32,7 @@ function startNewGame(event) {
 
 function displayCurrentGame() {
     const gameContainer = document.getElementById('gameContainer');
-    gameContainer.innerHTML = ''; // Limpia el contenedor antes de añadir nuevos elementos
+    gameContainer.innerHTML = `<h2>Partida a ${currentGame.maxPointsText} puntos</h2>`;
 
     const table = document.createElement('table');
     const headerRow = document.createElement('tr');
@@ -59,8 +61,8 @@ function displayCurrentGame() {
             // Calcular puntos totales hasta esta ronda
             let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => acc + curr, 0);
 
-            // Si los puntos totales superan 150 en esta ronda, aplicar la clase 'round-loser'
-            if (totalPointsUpToThisRound >= 151 && player.points[i] !== '---') {
+            // Si los puntos totales superan 150 en esta ronda, aplicar color rojo
+            if (totalPointsUpToThisRound >= currentGame.maxPoints && player.points[i] !== '---') {
                 pointCell.classList.add('round-loser');
             }
 
@@ -73,7 +75,7 @@ function displayCurrentGame() {
     newRoundRow.innerHTML = `<td>Ronda ${currentGame.rounds.length + 1}</td>`;
     currentGame.players.forEach((player, playerIndex) => {
         const inputCell = document.createElement('td');
-        if (player.totalPoints >= 151) {
+        if (player.totalPoints >= currentGame.maxPoints) {
             inputCell.textContent = '---';
         } else {
             const input = document.createElement('input');
@@ -94,7 +96,7 @@ function displayCurrentGame() {
         totalCell.textContent = player.totalPoints;
 
         // Aplicar clases CSS basadas en las puntuaciones totales
-        if (player.totalPoints >= 151) {
+        if (player.totalPoints >= currentGame.maxPoints) {
             totalCell.classList.add('total-loser');
         }
 
@@ -104,17 +106,16 @@ function displayCurrentGame() {
 
     gameContainer.appendChild(table);
 
-        // Añadir el botón "Agregar Ronda" dentro de la tabla
-        const buttonSubmitContainer = document.createElement('div');
-        buttonSubmitContainer.style.display = 'flex';
-        buttonSubmitContainer.style.flexDirection = 'column';
-        buttonSubmitContainer.style.gap = '10px';
+    const buttonSubmitContainer = document.createElement('div');
+    buttonSubmitContainer.style.display = 'flex';
+    buttonSubmitContainer.style.flexDirection = 'column';
+    buttonSubmitContainer.style.gap = '10px';
     
-        const submitButton = document.createElement('button');
-        submitButton.type = 'button'; // Cambiar a 'button' para evitar el comportamiento de formulario
-        submitButton.textContent = 'Agregar Ronda';
-        submitButton.addEventListener('click', addRound); // Añadir el evento click
-        buttonSubmitContainer.appendChild(submitButton);
+    const submitButton = document.createElement('button');
+    submitButton.type = 'button'; // Cambiar a 'button' para evitar el comportamiento de formulario
+    submitButton.textContent = 'Agregar Ronda';
+    submitButton.addEventListener('click', addRound);
+    buttonSubmitContainer.appendChild(submitButton);
     
         gameContainer.appendChild(buttonSubmitContainer);
 
@@ -124,19 +125,16 @@ function displayCurrentGame() {
     buttonsContainer.style.flexDirection = 'column';
     buttonsContainer.style.gap = '10px';
 
-    // Añadir botón para exportar a CSV
     const exportButton = document.createElement('button');
     exportButton.textContent = 'Exportar a CSV';
     exportButton.onclick = exportToCSV;
     buttonsContainer.appendChild(exportButton);
 
-    // Añadir botón para leer puntuaciones
     const readScoresButton = document.createElement('button');
     readScoresButton.textContent = 'Leer Puntuaciones';
     readScoresButton.onclick = readScores;
     buttonsContainer.appendChild(readScoresButton);
 
-    // Añadir el contenedor de botones al contenedor del juego
     gameContainer.appendChild(buttonsContainer);
 }
 
@@ -154,7 +152,7 @@ function addRound(event) {
             player.points.push(points);
             player.totalPoints += points;
         } else {
-            player.points.push('---'); // Añade '---' para mantener la consistencia de la longitud de la matriz de puntos
+            player.points.push('---');
         }
 
         round.push({ name: player.name, points: inputElement ? points : '---' });
@@ -167,7 +165,7 @@ function addRound(event) {
 }
 
 function checkWinCondition() {
-    const remainingPlayers = currentGame.players.filter(player => player.totalPoints < 151);
+    const remainingPlayers = currentGame.players.filter(player => player.totalPoints < currentGame.maxPoints);
 
     if (remainingPlayers.length === 1) {
         // Oculta el formulario de entrada de puntos
@@ -186,7 +184,7 @@ function readScores() {
     // Construir una cadena con las puntuaciones totales de forma resumida
     let scoresText = 'Puntuaciones totales: ';
     scoresText += currentGame.players
-        .filter(player => player.totalPoints < 151)
+        .filter(player => player.totalPoints < currentGame.maxPoints)
         .map(player => `${player.name}, ${player.totalPoints} puntos`)
         .join(', ') + '. ';
 
@@ -197,7 +195,7 @@ function readScores() {
     let maxPoints = -Infinity;
 
     currentGame.players.forEach(player => {
-        if (player.totalPoints < 151) {
+        if (player.totalPoints < currentGame.maxPoints) {
             if (player.totalPoints < minPoints) {
                 minPoints = player.totalPoints;
                 winningPlayer = player;
