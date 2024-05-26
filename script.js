@@ -1,3 +1,17 @@
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('currentGame')) {
+        document.getElementById('continueGameButton').style.display = 'block';
+            
+    }
+});
+
+document.getElementById('continueGameButton').addEventListener('click', function() {
+    currentGame = JSON.parse(localStorage.getItem('currentGame'));
+    displayCurrentGame();
+    document.getElementById('home').style.display = 'none';
+    document.getElementById('gameContainer').style.display = 'block';
+});
+
 document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
 document.getElementById('pastGamesButton').addEventListener('click', showPastGames);
 document.getElementById('gameForm').addEventListener('submit', startNewGame);
@@ -25,9 +39,14 @@ function startNewGame(event) {
     const players = playerNames.map(name => ({ name, points: [], totalPoints: 0 }));
     currentGame = { date, players, rounds: [], maxPoints, maxPointsText };
     games.push(currentGame);
+    saveGame();
     document.getElementById('newGame').style.display = 'none';
     document.getElementById('gameContainer').style.display = 'block';
     displayCurrentGame();
+}
+
+function saveGame() {
+    localStorage.setItem('currentGame', JSON.stringify(currentGame));
 }
 
 function displayCurrentGame() {
@@ -141,6 +160,14 @@ function displayCurrentGame() {
 function addRound(event) {
     event.preventDefault();
 
+    const inputs = document.querySelectorAll('input[type="number"]');
+    for (let input of inputs) {
+        if (input.value === '' || isNaN(input.value)) {
+            alert('Por favor, ingrese un valor numérico para todos los jugadores.');
+            return;
+        }
+    }
+
     const round = [];
 
     currentGame.players.forEach((player, index) => {
@@ -160,6 +187,7 @@ function addRound(event) {
 
     currentGame.rounds.push(round);
 
+    saveGame();
     checkWinCondition();
     displayCurrentGame();
 }
