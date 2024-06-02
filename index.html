@@ -34,14 +34,19 @@
         <div id="gameContainer" style="display: none;">
         </div>
         <div id="pastGames" style="display: none;"></div>
-
+        <button id="settingsButton" class="btn">Configuración API</button>
         <div id="apiKeyModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <h2>Introduce tu API Key de OpenAI para recibir comentarios personalizados</h2>
+                <h2>Introduce tu API Key de OpenAI y selecciona un modelo</h2>
                 <input type="text" id="apiKeyInput" placeholder="API Key">
+                <select id="modelSelect">
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                </select>
                 <input type="text" id="aiPromptInput" placeholder="Tipo de mensaje (por defecto: 'informativo')">
-                <button id="saveApiKeyButton" class="btn">Guardar API Key y Preferencia</button>
+                <button id="saveApiKeyButton" class="btn">Guardar Configuración</button>
             </div>
         </div>
     </div>
@@ -51,9 +56,6 @@
 </html>
 
 <script>
-
-
-
     document.addEventListener('DOMContentLoaded', function() {
 
         const dateInput = document.getElementById('date');
@@ -87,16 +89,23 @@
     
         saveBtn.onclick = function() {
             const apiKey = document.getElementById('apiKeyInput').value;
-            const aiPrompt = document.getElementById('aiPromptInput').value || "Informativo. Haz un resumen de cómo va la partida de forma divertida, puedes hacer bromas de todo tipo.";
+            const model = document.getElementById('modelSelect').value;
+            const aiPrompt = document.getElementById('aiPromptInput').value || "Informativo. Cuenta qué tal está yendo la partida";
             localStorage.setItem('openaiApiKey', apiKey);
             localStorage.setItem('aiPrompt', aiPrompt);
+            localStorage.setItem('openaiModel', model);
             modal.style.display = "none";
     
             // Añadir el mensaje de sistema inicial al historial
-            aiMessagesHistory.push({
-                role: "system",
-                content: `El sistema está configurado para generar ${aiPrompt}.`
-            });
+            const systemMessageIndex = aiMessagesHistory.findIndex(msg => msg.content.startsWith("El sistema está configurado para generar"));
+            if (systemMessageIndex === -1) {
+                aiMessagesHistory.push({
+                    role: "system",
+                    content: `El sistema está configurado para generar ${aiPrompt}.`
+                });
+            } else {
+                aiMessagesHistory[systemMessageIndex].content = `El sistema está configurado para generar el siguiente tipo de mensajes: ${aiPrompt}.`;
+            }
         }
     
         window.onclick = function(event) {
@@ -105,4 +114,4 @@
             }
         }
     });
-    </script>
+</script>

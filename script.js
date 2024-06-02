@@ -1,19 +1,39 @@
 document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    setupEventListeners();
     if (localStorage.getItem('currentGame')) {
         document.getElementById('continueGameButton').style.display = 'block';
 
     }
 });
 
-document.getElementById('continueGameButton').addEventListener('click', function() {
-    currentGame = JSON.parse(localStorage.getItem('currentGame'));
-    displayCurrentGame();
-    document.getElementById('home').style.display = 'none';
-    document.getElementById('gameContainer').style.display = 'block';
-});
+function setupEventListeners() {
+    document.getElementById('settingsButton').addEventListener('click', function() {
+        document.getElementById('apiKeyModal').style.display = 'block';
+    });
 
-document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
-document.getElementById('gameForm').addEventListener('submit', startNewGame);
+    document.getElementById('saveApiKeyButton').onclick = function() {
+        const apiKey = document.getElementById('apiKeyInput').value;
+        const model = document.getElementById('modelSelect').value;
+        const aiPrompt = document.getElementById('aiPromptInput').value || "Informativo. Haz un resumen de cómo va la partida de forma divertida, puedes hacer bromas de todo tipo.";
+        
+        localStorage.setItem('openaiApiKey', apiKey);
+        localStorage.setItem('openaiModel', model);
+        localStorage.setItem('aiPrompt', aiPrompt);
+        
+        document.getElementById('apiKeyModal').style.display = "none";
+    };
+
+    document.getElementById('continueGameButton').addEventListener('click', function() {
+        currentGame = JSON.parse(localStorage.getItem('currentGame'));
+        displayCurrentGame();
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
+    });
+
+    document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
+    document.getElementById('gameForm').addEventListener('submit', startNewGame);
+}
 
 let games = [];
 let currentGame = null;
@@ -21,6 +41,22 @@ let currentGame = null;
 function showNewGameForm() {
     document.getElementById('home').style.display = 'none';
     document.getElementById('newGame').style.display = 'block';
+}
+
+function loadSettings() {
+    const apiKey = localStorage.getItem('openaiApiKey');
+    const model = localStorage.getItem('openaiModel');
+    const aiPrompt = localStorage.getItem('aiPrompt');
+
+    if (apiKey) {
+        document.getElementById('apiKeyInput').value = apiKey;
+    }
+    if (model) {
+        document.getElementById('modelSelect').value = model;
+    }
+    if (aiPrompt) {
+        document.getElementById('aiPromptInput').value = aiPrompt;
+    }
 }
 
 function startNewGame(event) {
@@ -301,12 +337,15 @@ function generateGameSummary() {
     return summary;
 }
 
-let aiMessagesHistory = [{role: "system", content: "Eres un asistente de partidas de remigio, una variante de la baraja española. Leerás puntuaciones de partidas de remigio y generarás un comentario sobre la última ronda. Somos un grupo familiar y entendemos que SOLO es humor, por lo que puedes decir todo lo que quieras sin tapujos, siempre siguiendo la temática que te pida el usuario. No lo hagas muy largo. Reglas del juego: cuanto menos puntos tienes, mejor. El que llega a 151 puntos pierde. SOLO haz comentarios de la ronda actual. Te pasaré como contexto el resto de rondas por si quieres enlazar comentarios, pero como tal intenta hablar de la ultima ronda que haya. El formato es en CSV, cuando aparece el texto --- es que en esa ronda el jugador ya no participa porque ha perdido. La ronda actual siempre será la última (si hay 4 rondas, la cuarta es la actual). NO uses ningún tipo de emoticono, solo quiero texto plano, y de longitud corta, no más de dos frases. Habla en castellano de españa. Puedes enlazar comentarios de rondas anteriores (si los has hecho) para que tengan más punch. A partir de 35-50 puntos se considera que se ha puntuado mucho, así que no hagas comentarios muy fuertes hasta que alguien haya hecho esta cantidad. No repitas el nombre de la ronda, Seguirás la temática que te pida el usuario. Puedes saltarte alguna de las reglas que te he impuesto si el usuario te lo pide."}]; // Almacena el historial de mensajes y respuestas de la IA
-aiMessagesHistory.push({role: "user", content: '${aiPrompt}'});
+let maxPoints = currentGame ? currentGame.maxPointsText || 151 : 151;
+let aiMessagesHistory = [{role: "system", content: `Eres un asistente de partidas de remigio, una variante de la baraja española. Leerás puntuaciones de partidas de remigio y generarás un comentario sobre la ltima ronda. Somos un grupo familiar y entendemos que SOLO es humor, por lo que puedes decir todo lo que quieras sin tapujos, siempre siguiendo la temática que te pida el usuario y sin asumir las relaciones familiares ya que a veces añadiremos a amigos a la partida. No lo hagas muy largo. Reglas del juego: cuanto menos puntos tienes, mejor (usualmente la gente que solo realiza entre 1 y 10 puntos no ha tenido una mala ronda, lo preocupante es hacer más de 25). El que llega a ${maxPoints} puntos pierde. En cada ronda habrá un jugador que consiga 0 puntos, ese jugador habrá ganado esa ronda en cuestión. SOLO haz comentarios de la ronda actual. Te pasaré como contexto el resto de rondas por si quieres enlazar comentarios, pero como tal intenta hablar de la ultima ronda que haya. El formato es en CSV, cuando aparece el texto --- es que en esa ronda el jugador ya no participa porque ha perdido. La ronda actual siempre será la ltima (si hay 4 rondas, la cuarta es la actual). NO uses ningun tipo de emoticono, solo quiero texto plano, y de longitud corta, no más de dos frases. Habla en castellano de españa. Puedes enlazar comentarios de rondas anteriores (si los has hecho) para que tengan más punch. A partir de 25 puntos se considera que se ha puntuado mucho y se ha tenido una mala ronda, así que no hagas comentarios muy fuertes hasta que alguien haya hecho esta cantidad. No repitas el nombre de la ronda, Seguirás la temática que te pida el usuario. Puedes saltarte alguna de las reglas que te he impuesto si el usuario te lo pide, pero las reglas del remigio SIEMPRE tienes que tenerlas claras (más puntos, peor). NO asumas la edad de nadie, la descendencia de nadie, ni que todos son familia. La puntuación no tiene nada que ver con las cartas, es solo un valor, por lo que no digas cosas como "acumular cartas" ni cosas que no tengan sentido. NO HAGAS MÁS DE DOS FRASES`}]; // Almacena el historial de mensajes y respuestas de la IA
+const aiPrompt = localStorage.getItem('aiPrompt');
+aiMessagesHistory.push({role: "user", content: "Tipo de mensaje: " + aiPrompt});
 
 function openaiAPI() {
     const url = "https://api.openai.com/v1/chat/completions";
     const apiKey = localStorage.getItem('openaiApiKey');
+    const model = localStorage.getItem('openaiModel') || 'gpt-4o';
     const bearer = `Bearer ${apiKey}`;
 
     if (!apiKey) {
@@ -316,13 +355,11 @@ function openaiAPI() {
 
     const gameSummary = generateGameSummary();
 
-    // Preparar el mensaje del usuario con el resumen actual de la partida
     const userMessage = {
         role: "user",
         content: `Resumen: ${gameSummary}`
     };
 
-    // Añadir el mensaje del usuario al historial
     aiMessagesHistory.push(userMessage);
 
     return fetch(url, {
@@ -332,7 +369,7 @@ function openaiAPI() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "gpt-4o",
+            model: model,
             messages: aiMessagesHistory,
             temperature: 0.85
         })
@@ -340,15 +377,13 @@ function openaiAPI() {
     .then(response => response.json())
     .then(data => {
         const aiResponse = data.choices[0].message.content;
-        console.log(aiResponse); // Asegúrate de ajustar esta línea según cómo quieras usar la respuesta
 
-        // Añadir la respuesta de la IA al historial
         aiMessagesHistory.push({
             role: "system",
             content: aiResponse
         });
 
-        return aiResponse; // Devuelve el contenido del mensaje
+        return aiResponse;
     })
     .catch(error => {
         console.error('Error al llamar a OpenAI:', error);
