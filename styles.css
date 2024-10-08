@@ -305,3 +305,65 @@ body.dark-mode .icon-btn:hover {
     background-color: #f4f4f4;
     color: #333;
 }
+
+.all-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.primary-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.primary-btn:hover {
+    background-color: #45a049;
+}
+
+.secondary-btn {
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.secondary-btn:hover {
+    background-color: #e7e7e7;
+}
+
+body.dark-mode .secondary-btn {
+    background-color: #555;
+    color: #f4f4f4;
+    border-color: #777;
+}
+
+body.dark-mode .secondary-btn:hover {
+    background-color: #666;
+}
+
+@media (max-width: 768px) {
+    .button-container {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

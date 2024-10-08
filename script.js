@@ -155,41 +155,50 @@ function displayCurrentGame() {
 
     gameContainer.appendChild(table);
 
-    const buttonSubmitContainer = document.createElement('div');
-    buttonSubmitContainer.style.display = 'flex';
-    buttonSubmitContainer.style.flexDirection = 'column';
-    buttonSubmitContainer.style.gap = '10px';
+    // Crear un contenedor principal para todos los botones
+    const allButtonsContainer = document.createElement('div');
+    allButtonsContainer.className = 'all-buttons-container';
+
+    // Contenedor para el botón de agregar ronda
+    const addRoundContainer = document.createElement('div');
+    addRoundContainer.className = 'button-container';
     
     const submitButton = document.createElement('button');
     submitButton.type = 'button'; // Cambiar a 'button' para evitar el comportamiento de formulario
     submitButton.textContent = 'Agregar Ronda';
+    submitButton.className = 'btn primary-btn';
     submitButton.addEventListener('click', addRound);
-    buttonSubmitContainer.appendChild(submitButton);
+    addRoundContainer.appendChild(submitButton);
     
-        gameContainer.appendChild(buttonSubmitContainer);
+    allButtonsContainer.appendChild(addRoundContainer);
 
-    // Crear un contenedor para los botones que permitirá alinearlos verticalmente
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.style.display = 'flex';
-    buttonsContainer.style.flexDirection = 'column';
+    // Contenedor para los botones de acción
+    const actionButtonsContainer = document.createElement('div');
+    actionButtonsContainer.className = 'button-container';
 
     const readScoresButton = document.createElement('button');
     readScoresButton.textContent = 'Leer Puntuaciones';
+    readScoresButton.className = 'btn secondary-btn';
     readScoresButton.onclick = readScores;
-    buttonsContainer.appendChild(readScoresButton);
+    actionButtonsContainer.appendChild(readScoresButton);
 
     const funnyCommentButton = document.createElement('button');
     funnyCommentButton.id = 'jokeButton';
-    funnyCommentButton.textContent = 'Generar comentario (WIP)';
+    funnyCommentButton.textContent = 'Generar comentario';
+    funnyCommentButton.className = 'btn secondary-btn';
+    funnyCommentButton.style.display = 'none'; // Botón oculto porque la API está deshabilitada
     funnyCommentButton.onclick = readAIText;
-    buttonsContainer.appendChild(funnyCommentButton);
+    actionButtonsContainer.appendChild(funnyCommentButton);
 
     const exportButton = document.createElement('button');
     exportButton.textContent = 'Exportar a CSV';
+    exportButton.className = 'btn secondary-btn';
     exportButton.onclick = exportToCSV;
-    buttonsContainer.appendChild(exportButton);
+    actionButtonsContainer.appendChild(exportButton);
 
-    gameContainer.appendChild(buttonsContainer);
+    allButtonsContainer.appendChild(actionButtonsContainer);
+
+    gameContainer.appendChild(allButtonsContainer);
 }
 
 function addRound(event) {
