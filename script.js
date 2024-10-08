@@ -86,9 +86,37 @@ function displayCurrentGame() {
     const table = document.createElement('table');
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = '<th>Jugador</th>';
-    currentGame.players.forEach(player => {
+
+    // Encontrar al jugador con menos puntos y al jugador con más puntos (pero sin superar el máximo)
+    let minPoints = Infinity;
+    let maxPoints = -1;
+    let leaderIndex = -1;
+    let loserIndex = -1;
+    if (currentGame.rounds.length > 0) {
+        currentGame.players.forEach((player, index) => {
+            if (player.totalPoints < currentGame.maxPoints) {
+                if (player.totalPoints < minPoints) {
+                    minPoints = player.totalPoints;
+                    leaderIndex = index;
+                }
+                if (player.totalPoints > maxPoints) {
+                    maxPoints = player.totalPoints;
+                    loserIndex = index;
+                }
+            }
+        });
+    }
+
+    currentGame.players.forEach((player, index) => {
         const playerHeader = document.createElement('th');
         playerHeader.textContent = player.name;
+        if (currentGame.rounds.length > 0) {
+            if (index === leaderIndex) {
+                playerHeader.textContent += ' 👑'; // Añadir corona al líder
+            } else if (index === loserIndex) {
+                playerHeader.textContent += ' 💀'; // Añadir símbolo de perdedor
+            }
+        }
         headerRow.appendChild(playerHeader);
     });
     table.appendChild(headerRow);
