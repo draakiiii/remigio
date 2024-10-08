@@ -364,6 +364,7 @@ body.dark-mode .secondary-btn:hover {
     }
 
     .btn {
-        width: 100%;
+        padding: 8px 16px;
+        font-size: 14px;
     }
 }
