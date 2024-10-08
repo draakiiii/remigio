@@ -192,3 +192,83 @@ table input[type="number"]:focus {
         font-size: 12px;
     }
 }
+
+/* Estilos para el modo oscuro */
+body.dark-mode {
+    background-color: #333;
+    color: #f4f4f4;
+}
+
+body.dark-mode .container {
+    background: #444;
+    box-shadow: 0 4px 8px rgba(255,255,255,0.1);
+}
+
+body.dark-mode h1 {
+    color: #f4f4f4;
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="number"] {
+    background-color: #555;
+    color: #f4f4f4;
+    border-color: #666;
+}
+
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="date"]:focus,
+body.dark-mode input[type="number"]:focus {
+    border-color: #4CAF50;
+}
+
+body.dark-mode .btn {
+    background-color: #4CAF50;
+}
+
+body.dark-mode .btn:hover {
+    background-color: #45a049;
+}
+
+body.dark-mode table {
+    color: #f4f4f4;
+}
+
+body.dark-mode th, 
+body.dark-mode td {
+    border-color: #666;
+}
+
+body.dark-mode th {
+    background-color: #555;
+}
+
+body.dark-mode .round-loser {
+    background-color: #d32f2f;
+}
+
+body.dark-mode .round-winner {
+    background-color: #388e3c;
+}
+
+body.dark-mode .winner {
+    background-color: #388e3c;
+}
+
+body.dark-mode .loser {
+    background-color: #d32f2f;
+}
+
+body.dark-mode .game {
+    border-color: #666;
+}
+
+body.dark-mode table input[type="number"] {
+    background-color: #555;
+    color: #f4f4f4;
+    border-color: #666;
+}
+
+body.dark-mode table input[type="number"]:focus {
+    border-color: #4CAF50;
+}

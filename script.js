@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('continueGameButton').style.display = 'block';
 
     }
+    setupDarkModeToggle();
 });
 
 function setupEventListeners() {
@@ -387,5 +388,26 @@ function openaiAPI() {
     })
     .catch(error => {
         console.error('Error al llamar a OpenAI:', error);
+    });
+}
+
+function setupDarkModeToggle() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    // Verificar si el modo oscuro está guardado en localStorage
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        body.classList.add('dark-mode');
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+
+        // Guardar la preferencia en localStorage
+        if (body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+        } else {
+            localStorage.setItem('darkMode', null);
+        }
     });
 }
