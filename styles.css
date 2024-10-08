@@ -272,3 +272,36 @@ body.dark-mode table input[type="number"] {
 body.dark-mode table input[type="number"]:focus {
     border-color: #4CAF50;
 }
+
+.icon-btn {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: transparent;
+    border: 2px solid #4CAF50;
+    color: #4CAF50;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+body.dark-mode .icon-btn {
+    border-color: #f4f4f4;
+    color: #f4f4f4;
+}
+
+body.dark-mode .icon-btn:hover {
+    background-color: #f4f4f4;
+    color: #333;
+}
