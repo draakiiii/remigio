@@ -219,6 +219,7 @@ function displayCurrentGame() {
     actionButtonsContainer.appendChild(funnyCommentButton);
 
     const exportButton = document.createElement('button');
+    exportButton.style.display = 'none'; // Deshabilitado porque no le veo utilidad
     exportButton.textContent = 'Exportar a CSV';
     exportButton.className = 'btn secondary-btn';
     exportButton.onclick = exportToCSV;
