@@ -417,3 +417,120 @@ body.dark-mode .secondary-btn:hover {
         font-size: 14px;
     }
 }
+
+/* Estilos para el historial y ranking */
+#historyContainer, #rankingContainer {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.history-item, .ranking-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background: #f8f9fa;
+    transition: transform 0.2s ease;
+    animation: slideIn 0.3s ease;
+}
+
+.history-item:hover, .ranking-item:hover {
+    transform: translateX(5px);
+}
+
+.ranking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ranking-position {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.ranking-stats {
+    text-align: right;
+}
+
+/* Animaciones */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-new-score {
+    animation: scoreAdded 0.5s ease;
+}
+
+@keyframes scoreAdded {
+    0% {
+        background-color: #4CAF50;
+        color: white;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Estilos para los iconos */
+.fas {
+    margin-right: 8px;
+}
+
+.icon-btn .fas {
+    margin-right: 0;
+}
+
+/* Medallas para el ranking */
+.ranking-1 { color: #FFD700; } /* Oro */
+.ranking-2 { color: #C0C0C0; } /* Plata */
+.ranking-3 { color: #CD7F32; } /* Bronce */
+
+/* Modo oscuro */
+body.dark-mode #historyContainer,
+body.dark-mode #rankingContainer {
+    background: #444;
+}
+
+body.dark-mode .history-item,
+body.dark-mode .ranking-item {
+    background: #555;
+    color: #f4f4f4;
+}
+
+/* Animación para la tabla de puntuaciones */
+td.new-score {
+    animation: newScore 0.5s ease;
+}
+
+@keyframes newScore {
+    0% {
+        transform: scale(1.1);
+        background-color: #4CAF50;
+        color: white;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Estilos para el confeti */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}

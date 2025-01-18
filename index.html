@@ -6,36 +6,49 @@
     <title>Gestor de Partidas de Remigio</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <h1>Gestor de Partidas de Remigio</h1>
-        <button id="darkModeToggle" class="btn icon-btn" aria-label="Cambiar modo claro/oscuro">🌓</button>
+        <button id="darkModeToggle" class="btn icon-btn" aria-label="Cambiar modo claro/oscuro"><i class="fas fa-moon"></i></button>
         <div id="home" class="button-group">
-            <button id="newGameButton" class="btn">Nueva Partida</button>
-            <button id="continueGameButton" class="btn" style="display: none;">Continuar Partida</button>
+            <button id="newGameButton" class="btn"><i class="fas fa-plus"></i> Nueva Partida</button>
+            <button id="continueGameButton" class="btn" style="display: none;"><i class="fas fa-play"></i> Continuar Partida</button>
+            <button id="historyButton" class="btn"><i class="fas fa-history"></i> Historial</button>
+            <button id="rankingButton" class="btn"><i class="fas fa-trophy"></i> Ranking</button>
         </div>
         <div id="newGame" class="form-container" style="display: none;">
             <form id="gameForm">
                 <div class="input-group">
-                    <label for="date">Fecha:</label>
+                    <label for="date"><i class="fas fa-calendar"></i> Fecha:</label>
                     <input type="date" id="date" required>
                 </div>
                 <div class="input-group">
-                    <label for="players">Jugadores (separados por comas):</label>
+                    <label for="players"><i class="fas fa-users"></i> Jugadores (separados por comas):</label>
                     <input type="text" id="players" required>
                 </div>
                 <div class="input-group">
-                    <label for="maxPoints">Puntuación Máxima:</label>
+                    <label for="maxPoints"><i class="fas fa-star"></i> Puntuación Máxima:</label>
                     <input type="number" id="maxPoints" value="150" required>
                 </div>
-                <button type="submit" class="btn">Iniciar Partida</button>
+                <button type="submit" class="btn"><i class="fas fa-play"></i> Iniciar Partida</button>
             </form>
         </div>
         <div id="gameContainer" style="display: none;">
         </div>
+        <div id="historyContainer" class="animate__animated" style="display: none;">
+            <h2><i class="fas fa-history"></i> Historial de Partidas</h2>
+            <div id="historyList"></div>
+        </div>
+        <div id="rankingContainer" class="animate__animated" style="display: none;">
+            <h2><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
+            <div id="rankingList"></div>
+        </div>
         <div id="pastGames" style="display: none;"></div>
-        <button id="settingsButton" class="btn" style="display: none;">Configuración API</button> <!-- Botón oculto para que no se pueda usar, lo activaré más adelante si encuentro un mejor uso a la IA -->
+        <button id="settingsButton" class="btn" style="display: none;">Configuración API</button>
         <div id="apiKeyModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close">&times;</span>

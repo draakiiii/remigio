@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
     setupDarkModeToggle();
+    loadGameHistory();
+    updateRanking();
 });
 
 function setupEventListeners() {
@@ -34,6 +36,18 @@ function setupEventListeners() {
 
     document.getElementById('newGameButton').addEventListener('click', showNewGameForm);
     document.getElementById('gameForm').addEventListener('submit', startNewGame);
+
+    document.getElementById('historyButton').addEventListener('click', function() {
+        hideAllContainers();
+        document.getElementById('historyContainer').style.display = 'block';
+        document.getElementById('historyContainer').classList.add('animate__fadeIn');
+    });
+
+    document.getElementById('rankingButton').addEventListener('click', function() {
+        hideAllContainers();
+        document.getElementById('rankingContainer').style.display = 'block';
+        document.getElementById('rankingContainer').classList.add('animate__fadeIn');
+    });
 }
 
 let games = [];
@@ -94,29 +108,39 @@ function displayCurrentGame() {
     let losersIndexes = [];
 
     if (currentGame.rounds.length > 0) {
-        // Primero encontramos los puntos mínimos y máximos
-        currentGame.players.forEach((player, index) => {
-            if (player.totalPoints < currentGame.maxPoints) {
-                if (player.totalPoints < minPoints) {
-                    minPoints = player.totalPoints;
+        // Verificar si hay un ganador (solo queda un jugador)
+        const remainingPlayers = currentGame.players.filter(p => p.totalPoints < currentGame.maxPoints);
+        
+        if (remainingPlayers.length === 1) {
+            // Si solo queda un jugador, es el ganador
+            const winnerIndex = currentGame.players.findIndex(p => p.totalPoints < currentGame.maxPoints);
+            leadersIndexes = [winnerIndex];
+            losersIndexes = [];
+        } else {
+            // Si hay más de un jugador, encontrar los puntos mínimos y máximos
+            currentGame.players.forEach((player, index) => {
+                if (player.totalPoints < currentGame.maxPoints) {
+                    if (player.totalPoints < minPoints) {
+                        minPoints = player.totalPoints;
+                    }
+                    if (player.totalPoints > maxPoints) {
+                        maxPoints = player.totalPoints;
+                    }
                 }
-                if (player.totalPoints > maxPoints) {
-                    maxPoints = player.totalPoints;
-                }
-            }
-        });
+            });
 
-        // Luego encontramos todos los jugadores que empatan en esos puntos
-        currentGame.players.forEach((player, index) => {
-            if (player.totalPoints < currentGame.maxPoints) {
-                if (player.totalPoints === minPoints) {
-                    leadersIndexes.push(index);
+            // Luego encontramos todos los jugadores que empatan en esos puntos
+            currentGame.players.forEach((player, index) => {
+                if (player.totalPoints < currentGame.maxPoints) {
+                    if (player.totalPoints === minPoints) {
+                        leadersIndexes.push(index);
+                    }
+                    if (player.totalPoints === maxPoints) {
+                        losersIndexes.push(index);
+                    }
                 }
-                if (player.totalPoints === maxPoints) {
-                    losersIndexes.push(index);
-                }
-            }
-        });
+            });
+        }
     }
 
     currentGame.players.forEach((player, index) => {
@@ -129,7 +153,7 @@ function displayCurrentGame() {
                 playerHeader.innerHTML += ' <span class="crown-icon">👑</span>';
                 playerHeader.classList.add('tied-leader');
             }
-            if (losersIndexes.includes(index)) {
+            if (losersIndexes.includes(index) && !leadersIndexes.includes(index)) {
                 playerHeader.innerHTML += ' <span class="skull-icon">💀</span>';
                 playerHeader.classList.add('tied-loser');
             }
@@ -262,17 +286,21 @@ function addRound(event) {
 
     currentGame.players.forEach((player, index) => {
         const inputElement = document.getElementById(`player${index + 1}`);
-        let points = 0;
-
         if (inputElement) {
-            points = parseInt(inputElement.value) || 0;
+            const points = parseInt(inputElement.value) || 0;
             player.points.push(points);
             player.totalPoints += points;
+            
+            // Añadir clase para animación
+            const cells = document.querySelectorAll('td');
+            const lastCell = cells[cells.length - currentGame.players.length + index];
+            if (lastCell) {
+                lastCell.classList.add('new-score');
+                setTimeout(() => lastCell.classList.remove('new-score'), 500);
+            }
         } else {
             player.points.push('---');
         }
-
-        round.push({ name: player.name, points: inputElement ? points : '---' });
     });
 
     currentGame.rounds.push(round);
@@ -286,54 +314,63 @@ function checkWinCondition() {
     const remainingPlayers = currentGame.players.filter(player => player.totalPoints < currentGame.maxPoints);
 
     if (remainingPlayers.length === 1) {
-        // Oculta el formulario de entrada de puntos
-        const form = document.querySelector('form');
-        if (form) {
-            form.style.display = 'none';
-        }
-
         const winner = remainingPlayers[0];
-        alert(`¡${winner.name} ha ganado la partida!`);
-        document.querySelector('form').style.display = 'none'; // Oculta solo el formulario de nueva ronda
+        
+        // Guardar la partida en el historial
+        saveGameToHistory(currentGame);
+        
+        // Mostrar confeti
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+
+        // Mostrar mensaje de victoria con animación
+        const message = document.createElement('div');
+        message.className = 'winner-message animate__animated animate__bounceIn';
+        message.innerHTML = `
+            <h2><i class="fas fa-trophy"></i> ¡${winner.name} ha ganado la partida!</h2>
+        `;
+        document.getElementById('gameContainer').appendChild(message);
+
+        // Ocultar el formulario de nueva ronda
+        document.querySelector('form').style.display = 'none';
     }
 }
 
 function readScores() {
-    // Construir una cadena con las puntuaciones totales de forma resumida
-    let scoresText = 'Puntuaciones totales: ';
-    scoresText += currentGame.players
-        .filter(player => player.totalPoints < currentGame.maxPoints)
-        .map(player => `${player.name}, ${player.totalPoints} puntos`)
-        .join(', ') + '. ';
-
-    // Determinar quién va ganando y quién va perdiendo
-    let winningPlayer = null;
-    let losingPlayer = null;
-    let minPoints = Infinity;
-    let maxPoints = -Infinity;
-
-    currentGame.players.forEach(player => {
-        if (player.totalPoints < currentGame.maxPoints) {
-            if (player.totalPoints < minPoints) {
-                minPoints = player.totalPoints;
-                winningPlayer = player;
-            }
-            if (player.totalPoints > maxPoints) {
-                maxPoints = player.totalPoints;
-                losingPlayer = player;
-            }
-        }
-    });
-
-    if (winningPlayer) {
-        scoresText += `Va ganando ${winningPlayer.name} con ${winningPlayer.totalPoints} puntos y `;
+    const activePlayers = currentGame.players.filter(player => player.totalPoints < currentGame.maxPoints);
+    
+    // Si solo queda un jugador, es el ganador
+    if (activePlayers.length === 1) {
+        const msg = new SpeechSynthesisUtterance(
+            `¡${activePlayers[0].name} ha ganado la partida!`
+        );
+        window.speechSynthesis.speak(msg);
+        return;
     }
-    if (losingPlayer) {
-        scoresText += `va perdiendo ${losingPlayer.name} con ${losingPlayer.totalPoints} puntos.`;
+
+    // Ordenar jugadores por puntuación (menor a mayor, ya que menos puntos es mejor)
+    const sortedPlayers = [...activePlayers].sort((a, b) => a.totalPoints - b.totalPoints);
+    
+    // Construir el texto con todos los jugadores
+    let scoresText = '';
+    
+    if (sortedPlayers.length === 2) {
+        scoresText = `${sortedPlayers[0].name} va primero con ${sortedPlayers[0].totalPoints} puntos y ${sortedPlayers[1].name} va segundo con ${sortedPlayers[1].totalPoints} puntos`;
+    } else {
+        // Para 3 o más jugadores
+        const positions = ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', 'sexto', 'séptimo', 'octavo'];
+        
+        scoresText = sortedPlayers.map((player, index) => {
+            const position = positions[index] || `${index + 1}º`;
+            return `${player.name} va ${position} con ${player.totalPoints} puntos`;
+        }).join(', ').replace(/,([^,]*)$/, ' y$1');
     }
 
     const msg = new SpeechSynthesisUtterance(scoresText);
-        window.speechSynthesis.speak(msg);
+    window.speechSynthesis.speak(msg);
 }
 
 async function readAIText() {
@@ -504,5 +541,108 @@ function editCell(event) {
         if (e.key === 'Enter') {
             saveEdit();
         }
+    });
+}
+
+function hideAllContainers() {
+    const containers = ['home', 'newGame', 'gameContainer', 'historyContainer', 'rankingContainer'];
+    containers.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+            element.classList.remove('animate__fadeIn');
+        }
+    });
+}
+
+function saveGameToHistory(game) {
+    let history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+    history.unshift({
+        date: game.date,
+        players: game.players,
+        winner: findWinner(game),
+        timestamp: new Date().getTime()
+    });
+    localStorage.setItem('gameHistory', JSON.stringify(history));
+    updateRanking();
+}
+
+function findWinner(game) {
+    const remainingPlayers = game.players.filter(player => player.totalPoints < game.maxPoints);
+    return remainingPlayers.length === 1 ? remainingPlayers[0] : null;
+}
+
+function loadGameHistory() {
+    const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+
+    history.forEach((game, index) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <div class="history-header">
+                <i class="fas fa-calendar"></i> ${new Date(game.date).toLocaleDateString()}
+            </div>
+            <div class="history-details">
+                <div><i class="fas fa-users"></i> Jugadores: ${game.players.map(p => p.name).join(', ')}</div>
+                ${game.winner ? `<div><i class="fas fa-trophy"></i> Ganador: ${game.winner.name}</div>` : ''}
+            </div>
+        `;
+        historyList.appendChild(historyItem);
+    });
+}
+
+function updateRanking() {
+    const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+    const playerStats = {};
+
+    // Calcular estadísticas
+    history.forEach(game => {
+        game.players.forEach(player => {
+            if (!playerStats[player.name]) {
+                playerStats[player.name] = {
+                    name: player.name,
+                    gamesPlayed: 0,
+                    gamesWon: 0,
+                    winRate: 0
+                };
+            }
+            playerStats[player.name].gamesPlayed++;
+            if (game.winner && game.winner.name === player.name) {
+                playerStats[player.name].gamesWon++;
+            }
+        });
+    });
+
+    // Calcular porcentajes y ordenar
+    const ranking = Object.values(playerStats)
+        .map(player => ({
+            ...player,
+            winRate: (player.gamesWon / player.gamesPlayed * 100).toFixed(1)
+        }))
+        .sort((a, b) => b.winRate - a.winRate);
+
+    // Mostrar ranking
+    const rankingList = document.getElementById('rankingList');
+    rankingList.innerHTML = '';
+
+    ranking.forEach((player, index) => {
+        const rankingItem = document.createElement('div');
+        rankingItem.className = 'ranking-item';
+        
+        const medalIcon = index < 3 ? `<i class="fas fa-medal ranking-${index + 1}"></i>` : `<span class="ranking-position">${index + 1}</span>`;
+        
+        rankingItem.innerHTML = `
+            <div class="ranking-info">
+                ${medalIcon}
+                <span class="player-name">${player.name}</span>
+            </div>
+            <div class="ranking-stats">
+                <div>Victorias: ${player.gamesWon}/${player.gamesPlayed}</div>
+                <div>Ratio: ${player.winRate}%</div>
+            </div>
+        `;
+        rankingList.appendChild(rankingItem);
     });
 }
