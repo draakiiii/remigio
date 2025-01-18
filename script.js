@@ -87,21 +87,33 @@ function displayCurrentGame() {
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = '<th>Jugador</th>';
 
-    // Encontrar al jugador con menos puntos y al jugador con más puntos (pero sin superar el máximo)
+    // Encontrar jugadores con menor y mayor puntuación
     let minPoints = Infinity;
     let maxPoints = -1;
-    let leaderIndex = -1;
-    let loserIndex = -1;
+    let leadersIndexes = [];
+    let losersIndexes = [];
+
     if (currentGame.rounds.length > 0) {
+        // Primero encontramos los puntos mínimos y máximos
         currentGame.players.forEach((player, index) => {
             if (player.totalPoints < currentGame.maxPoints) {
                 if (player.totalPoints < minPoints) {
                     minPoints = player.totalPoints;
-                    leaderIndex = index;
                 }
                 if (player.totalPoints > maxPoints) {
                     maxPoints = player.totalPoints;
-                    loserIndex = index;
+                }
+            }
+        });
+
+        // Luego encontramos todos los jugadores que empatan en esos puntos
+        currentGame.players.forEach((player, index) => {
+            if (player.totalPoints < currentGame.maxPoints) {
+                if (player.totalPoints === minPoints) {
+                    leadersIndexes.push(index);
+                }
+                if (player.totalPoints === maxPoints) {
+                    losersIndexes.push(index);
                 }
             }
         });
@@ -110,11 +122,16 @@ function displayCurrentGame() {
     currentGame.players.forEach((player, index) => {
         const playerHeader = document.createElement('th');
         playerHeader.textContent = player.name;
+        
+        // Añadir iconos para líderes y perdedores
         if (currentGame.rounds.length > 0) {
-            if (index === leaderIndex) {
-                playerHeader.textContent += ' 👑'; // Añadir corona al líder
-            } else if (index === loserIndex) {
-                playerHeader.textContent += ' 💀'; // Añadir símbolo de perdedor
+            if (leadersIndexes.includes(index)) {
+                playerHeader.innerHTML += ' <span class="crown-icon">👑</span>';
+                playerHeader.classList.add('tied-leader');
+            }
+            if (losersIndexes.includes(index)) {
+                playerHeader.innerHTML += ' <span class="skull-icon">💀</span>';
+                playerHeader.classList.add('tied-loser');
             }
         }
         headerRow.appendChild(playerHeader);
@@ -125,20 +142,24 @@ function displayCurrentGame() {
     for (let i = 0; i < maxRounds; i++) {
         const roundRow = document.createElement('tr');
         roundRow.innerHTML = `<td>Ronda ${i + 1}</td>`;
-        currentGame.players.forEach(player => {
+        currentGame.players.forEach((player, playerIndex) => {
             const points = player.points[i] !== undefined ? player.points[i] : '---';
             const pointCell = document.createElement('td');
             pointCell.textContent = points;
 
-            // Aplicar clase CSS para puntos de ronda igual a 0, pero no para '---'
+            // Hacer las celdas de rondas anteriores editables
+            if (points !== '---' && i < currentGame.rounds.length) {
+                pointCell.classList.add('editable');
+                pointCell.dataset.round = i;
+                pointCell.dataset.player = playerIndex;
+                pointCell.addEventListener('click', editCell);
+            }
+
             if (points === 0 && pointCell.textContent !== '---') {
                 pointCell.classList.add('round-winner');
             }
 
-            // Calcular puntos totales hasta esta ronda
             let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => acc + curr, 0);
-
-            // Si los puntos totales superan 150 en esta ronda, aplicar color rojo
             if (totalPointsUpToThisRound >= currentGame.maxPoints && player.points[i] !== '---') {
                 pointCell.classList.add('round-loser');
             }
@@ -172,7 +193,6 @@ function displayCurrentGame() {
         const totalCell = document.createElement('td');
         totalCell.textContent = player.totalPoints;
 
-        // Aplicar clases CSS basadas en las puntuaciones totales
         if (player.totalPoints >= currentGame.maxPoints) {
             totalCell.classList.add('total-loser');
         }
@@ -183,16 +203,15 @@ function displayCurrentGame() {
 
     gameContainer.appendChild(table);
 
-    // Crear un contenedor principal para todos los botones
+    // Resto del código existente para los botones...
     const allButtonsContainer = document.createElement('div');
     allButtonsContainer.className = 'all-buttons-container';
 
-    // Contenedor para el botón de agregar ronda
     const addRoundContainer = document.createElement('div');
     addRoundContainer.className = 'button-container';
     
     const submitButton = document.createElement('button');
-    submitButton.type = 'button'; // Cambiar a 'button' para evitar el comportamiento de formulario
+    submitButton.type = 'button';
     submitButton.textContent = 'Agregar Ronda';
     submitButton.className = 'btn primary-btn';
     submitButton.addEventListener('click', addRound);
@@ -200,7 +219,6 @@ function displayCurrentGame() {
     
     allButtonsContainer.appendChild(addRoundContainer);
 
-    // Contenedor para los botones de acción
     const actionButtonsContainer = document.createElement('div');
     actionButtonsContainer.className = 'button-container';
 
@@ -214,19 +232,18 @@ function displayCurrentGame() {
     funnyCommentButton.id = 'jokeButton';
     funnyCommentButton.textContent = 'Generar comentario';
     funnyCommentButton.className = 'btn secondary-btn';
-    funnyCommentButton.style.display = 'none'; // Botón oculto porque la API está deshabilitada
+    funnyCommentButton.style.display = 'none';
     funnyCommentButton.onclick = readAIText;
     actionButtonsContainer.appendChild(funnyCommentButton);
 
     const exportButton = document.createElement('button');
-    exportButton.style.display = 'none'; // Deshabilitado porque no le veo utilidad
+    exportButton.style.display = 'none';
     exportButton.textContent = 'Exportar a CSV';
     exportButton.className = 'btn secondary-btn';
     exportButton.onclick = exportToCSV;
     actionButtonsContainer.appendChild(exportButton);
 
     allButtonsContainer.appendChild(actionButtonsContainer);
-
     gameContainer.appendChild(allButtonsContainer);
 }
 
@@ -446,6 +463,46 @@ function setupDarkModeToggle() {
             localStorage.setItem('darkMode', 'enabled');
         } else {
             localStorage.setItem('darkMode', null);
+        }
+    });
+}
+
+function editCell(event) {
+    const cell = event.target;
+    const currentValue = cell.textContent;
+    const round = parseInt(cell.dataset.round);
+    const playerIndex = parseInt(cell.dataset.player);
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = currentValue;
+    input.min = 0;
+    input.style.width = '50px';
+    
+    cell.textContent = '';
+    cell.appendChild(input);
+    input.focus();
+
+    function saveEdit() {
+        const newValue = parseInt(input.value) || 0;
+        
+        // Actualizar los puntos en el objeto del juego
+        currentGame.players[playerIndex].points[round] = newValue;
+        
+        // Recalcular puntos totales
+        currentGame.players[playerIndex].totalPoints = currentGame.players[playerIndex].points.reduce((a, b) => a + b, 0);
+        
+        // Guardar el juego actualizado
+        saveGame();
+        
+        // Actualizar la visualización
+        displayCurrentGame();
+    }
+
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            saveEdit();
         }
     });
 }
