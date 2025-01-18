@@ -171,19 +171,32 @@ function displayCurrentGame() {
             const pointCell = document.createElement('td');
             pointCell.textContent = points;
 
-            // Hacer las celdas de rondas anteriores editables
-            if (points !== '---' && i < currentGame.rounds.length) {
-                pointCell.classList.add('editable');
-                pointCell.dataset.round = i;
-                pointCell.dataset.player = playerIndex;
-                pointCell.addEventListener('click', editCell);
+            // Hacer las celdas editables si son de rondas anteriores y el jugador no estaba eliminado en esa ronda
+            if (i < currentGame.rounds.length) {
+                // Calcular puntos totales hasta esta ronda
+                const totalUpToThisRound = player.points.slice(0, i).reduce((acc, curr) => {
+                    return acc + (curr === '---' ? 0 : curr);
+                }, 0);
+
+                // La celda es editable si:
+                // 1. Es una ronda anterior
+                // 2. El jugador no estaba eliminado en esta ronda específica
+                if (totalUpToThisRound < currentGame.maxPoints) {
+                    pointCell.classList.add('editable');
+                    pointCell.dataset.round = i;
+                    pointCell.dataset.player = playerIndex;
+                    pointCell.addEventListener('click', editCell);
+                }
             }
 
             if (points === 0 && pointCell.textContent !== '---') {
                 pointCell.classList.add('round-winner');
             }
 
-            let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => acc + curr, 0);
+            let totalPointsUpToThisRound = player.points.slice(0, i + 1).reduce((acc, curr) => {
+                return acc + (curr === '---' ? 0 : curr);
+            }, 0);
+            
             if (totalPointsUpToThisRound >= currentGame.maxPoints && player.points[i] !== '---') {
                 pointCell.classList.add('round-loser');
             }
@@ -512,7 +525,7 @@ function editCell(event) {
 
     const input = document.createElement('input');
     input.type = 'number';
-    input.value = currentValue;
+    input.value = currentValue === '---' ? 0 : currentValue;
     input.min = 0;
     input.style.width = '50px';
     
@@ -526,8 +539,27 @@ function editCell(event) {
         // Actualizar los puntos en el objeto del juego
         currentGame.players[playerIndex].points[round] = newValue;
         
-        // Recalcular puntos totales
-        currentGame.players[playerIndex].totalPoints = currentGame.players[playerIndex].points.reduce((a, b) => a + b, 0);
+        // Recalcular todos los puntos totales y actualizar las rondas posteriores
+        let total = 0;
+        for (let i = 0; i < currentGame.players[playerIndex].points.length; i++) {
+            let points = currentGame.players[playerIndex].points[i];
+            if (i <= round) {
+                // Mantener los puntos reales hasta la ronda editada
+                total += points === '---' ? 0 : points;
+            } else {
+                // Para rondas posteriores
+                if (total >= currentGame.maxPoints) {
+                    currentGame.players[playerIndex].points[i] = '---';
+                } else if (currentGame.players[playerIndex].points[i] === '---') {
+                    // Si era '---' pero ahora el jugador no está eliminado, restaurar a 0
+                    currentGame.players[playerIndex].points[i] = 0;
+                }
+                total += currentGame.players[playerIndex].points[i] === '---' ? 0 : currentGame.players[playerIndex].points[i];
+            }
+        }
+        
+        // Actualizar el total final
+        currentGame.players[playerIndex].totalPoints = total;
         
         // Guardar el juego actualizado
         saveGame();
