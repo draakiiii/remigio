@@ -67,9 +67,21 @@ button {
 
 .button-group {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     gap: 10px;
-    flex-wrap: wrap; /* Permite que los botones se ajusten en filas según el espacio disponible */
+    margin: 20px auto;
+    width: 100%;
+    max-width: 300px;
+}
+
+.button-group .btn {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn {
@@ -533,4 +545,64 @@ td.new-score {
     height: 100%;
     pointer-events: none;
     z-index: 9999;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+.back-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background-color: var(--primary-color);
+    transform: translateX(-3px);
+}
+
+.back-btn i {
+    margin-right: 5px;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .back-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+    .button-group {
+        padding: 0 20px;
+    }
+    
+    .button-group .btn {
+        width: 100%;
+    }
 }

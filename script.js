@@ -48,6 +48,17 @@ function setupEventListeners() {
         document.getElementById('rankingContainer').style.display = 'block';
         document.getElementById('rankingContainer').classList.add('animate__fadeIn');
     });
+
+    // Botones de volver
+    document.getElementById('historyBackBtn').addEventListener('click', function() {
+        hideAllContainers();
+        showHome();
+    });
+
+    document.getElementById('rankingBackBtn').addEventListener('click', function() {
+        hideAllContainers();
+        showHome();
+    });
 }
 
 let games = [];
@@ -677,4 +688,9 @@ function updateRanking() {
         `;
         rankingList.appendChild(rankingItem);
     });
+}
+
+function showHome() {
+    document.getElementById('home').style.display = 'block';
+    document.getElementById('home').classList.add('animate__fadeIn');
 }
