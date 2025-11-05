@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -22,6 +23,9 @@
             <button id="continueGameButton" class="btn" style="display: none;"><i class="fas fa-play"></i> Continuar Partida</button>
             <button id="historyButton" class="btn"><i class="fas fa-history"></i> Historial</button>
             <button id="rankingButton" class="btn"><i class="fas fa-trophy"></i> Ranking</button>
+            <button id="statsButton" class="btn"><i class="fas fa-chart-line"></i> Estadísticas</button>
+            <button id="achievementsButton" class="btn"><i class="fas fa-medal"></i> Logros</button>
+            <button id="compareButton" class="btn"><i class="fas fa-users-cog"></i> Comparar Jugadores</button>
         </div>
         <div id="newGame" class="form-container" style="display: none;">
             <form id="gameForm">
@@ -56,6 +60,43 @@
             </div>
             <div id="rankingList"></div>
         </div>
+        <div id="statsContainer" class="animate__animated" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Estadísticas Avanzadas</h2>
+                <button class="btn back-btn" id="statsBackBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+            </div>
+            <div id="statsList"></div>
+        </div>
+        <div id="achievementsContainer" class="animate__animated" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-medal"></i> Logros Desbloqueados</h2>
+                <button class="btn back-btn" id="achievementsBackBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+            </div>
+            <div id="achievementsList"></div>
+        </div>
+        <div id="compareContainer" class="animate__animated" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-users-cog"></i> Comparar Jugadores</h2>
+                <button class="btn back-btn" id="compareBackBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+            </div>
+            <div class="compare-selector">
+                <select id="player1Select" class="player-select">
+                    <option value="">Selecciona Jugador 1</option>
+                </select>
+                <span class="vs-text">VS</span>
+                <select id="player2Select" class="player-select">
+                    <option value="">Selecciona Jugador 2</option>
+                </select>
+            </div>
+            <div id="compareResults"></div>
+        </div>
+        <div id="gameDetailContainer" class="animate__animated" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-area"></i> Detalle de Partida</h2>
+                <button class="btn back-btn" id="gameDetailBackBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+            </div>
+            <div id="gameDetailContent"></div>
+        </div>
         <div id="pastGames" style="display: none;"></div>
         <div id="apiKeyModal" class="modal" style="display:none;">
             <div class="modal-backdrop"></div>
@@ -83,6 +124,26 @@
                         <small class="help-text">Personaliza el estilo de los comentarios de la IA</small>
                     </div>
                     <button id="saveApiKeyButton" class="btn primary-btn"><i class="fas fa-save"></i> Guardar Configuración</button>
+                </div>
+            </div>
+        </div>
+        <div id="dataModal" class="modal" style="display:none;">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-database"></i> Gestión de Datos</h2>
+                    <button class="close-data" aria-label="Cerrar">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="data-actions">
+                        <button id="exportDataButton" class="btn primary-btn full-width">
+                            <i class="fas fa-download"></i> Exportar Todos los Datos
+                        </button>
+                        <button id="importDataButton" class="btn secondary-btn full-width">
+                            <i class="fas fa-upload"></i> Importar Datos
+                        </button>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                    </div>
                 </div>
             </div>
         </div>

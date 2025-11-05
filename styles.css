@@ -894,3 +894,307 @@ body.dark-mode select {
         right: var(--spacing-sm);
     }
 }
+
+/* Estilos para estadísticas avanzadas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.stat-card h3 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--primary-color);
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.stat-value {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: var(--spacing-sm) 0;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+body.dark-mode .stat-card {
+    background: #555;
+    border-color: #666;
+}
+
+/* Estilos para logros */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.achievement-card {
+    background: var(--surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.achievement-card.unlocked {
+    border-color: var(--success-color);
+    background: linear-gradient(135deg, rgba(76,175,80,0.1) 0%, rgba(76,175,80,0.05) 100%);
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.achievement-icon {
+    font-size: 3em;
+    margin-bottom: var(--spacing-sm);
+}
+
+.achievement-title {
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: var(--spacing-sm) 0;
+}
+
+.achievement-description {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.achievement-date {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+    font-style: italic;
+}
+
+body.dark-mode .achievement-card {
+    background: #555;
+    border-color: #666;
+}
+
+body.dark-mode .achievement-card.unlocked {
+    border-color: var(--success-color);
+    background: linear-gradient(135deg, rgba(76,175,80,0.2) 0%, rgba(76,175,80,0.1) 100%);
+}
+
+/* Comparación de jugadores */
+.compare-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    flex-wrap: wrap;
+}
+
+.player-select {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.vs-text {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.compare-stats {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.player-stats {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-color);
+}
+
+.stat-comparison {
+    text-align: center;
+    padding: var(--spacing-md);
+}
+
+.stat-name {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-comparison-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.winner-indicator {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+body.dark-mode .player-stats {
+    background: #555;
+    border-color: #666;
+}
+
+/* Gráficos */
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .chart-container {
+    background: #555;
+    border-color: #666;
+}
+
+/* Botón de compartir */
+.share-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.share-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: var(--spacing-sm);
+    z-index: 100;
+    min-width: 150px;
+}
+
+.share-menu.show {
+    display: block;
+}
+
+.share-option {
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.share-option:hover {
+    background: var(--background);
+}
+
+body.dark-mode .share-menu {
+    background: #555;
+    border-color: #666;
+}
+
+body.dark-mode .share-option:hover {
+    background: #666;
+}
+
+/* Detalle de partida */
+.game-detail-header {
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-md);
+}
+
+.game-detail-info {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.detail-item {
+    text-align: center;
+}
+
+.detail-label {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.detail-value {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+/* Modal de datos */
+.data-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* Responsive para nuevas funcionalidades */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .achievements-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .compare-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+
+    .compare-selector {
+        flex-direction: column;
+    }
+
+    .player-select {
+        width: 100%;
+        max-width: none;
+    }
+}
