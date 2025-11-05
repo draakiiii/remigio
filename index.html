@@ -13,7 +13,10 @@
 <body>
     <div class="container">
         <h1>Gestor de Partidas de Remigio</h1>
-        <button id="darkModeToggle" class="btn icon-btn" aria-label="Cambiar modo claro/oscuro"><i class="fas fa-moon"></i></button>
+        <div class="header-controls">
+            <button id="darkModeToggle" class="btn icon-btn" aria-label="Cambiar modo claro/oscuro"><i class="fas fa-moon"></i></button>
+            <button id="settingsButton" class="btn icon-btn settings-btn" aria-label="Configuraci\u00f3n API"><i class="fas fa-cog"></i></button>
+        </div>
         <div id="home" class="button-group">
             <button id="newGameButton" class="btn"><i class="fas fa-plus"></i> Nueva Partida</button>
             <button id="continueGameButton" class="btn" style="display: none;"><i class="fas fa-play"></i> Continuar Partida</button>
@@ -28,11 +31,11 @@
                 </div>
                 <div class="input-group">
                     <label for="players"><i class="fas fa-users"></i> Jugadores (separados por comas):</label>
-                    <input type="text" id="players" required>
+                    <input type="text" id="players" placeholder="Ej: Juan, María, Pedro" required>
                 </div>
                 <div class="input-group">
                     <label for="maxPoints"><i class="fas fa-star"></i> Puntuación Máxima:</label>
-                    <input type="number" id="maxPoints" value="150" required>
+                    <input type="number" id="maxPoints" value="150" min="50" max="500" placeholder="150" required>
                 </div>
                 <button type="submit" class="btn"><i class="fas fa-play"></i> Iniciar Partida</button>
             </form>
@@ -54,21 +57,36 @@
             <div id="rankingList"></div>
         </div>
         <div id="pastGames" style="display: none;"></div>
-        <button id="settingsButton" class="btn" style="display: none;">Configuración API</button>
         <div id="apiKeyModal" class="modal" style="display:none;">
+            <div class="modal-backdrop"></div>
             <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Introduce tu API Key de OpenAI y selecciona un modelo</h2>
-                <input type="text" id="apiKeyInput" placeholder="API Key">
-                <select id="modelSelect">
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                </select>
-                <input type="text" id="aiPromptInput" placeholder="Tipo de mensaje (por defecto: 'informativo')">
-                <button id="saveApiKeyButton" class="btn">Guardar Configuración</button>
+                <div class="modal-header">
+                    <h2><i class="fas fa-cog"></i> Configuración de OpenAI</h2>
+                    <button class="close" aria-label="Cerrar">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="apiKeyInput"><i class="fas fa-key"></i> API Key de OpenAI:</label>
+                        <input type="password" id="apiKeyInput" placeholder="sk-...">
+                    </div>
+                    <div class="input-group">
+                        <label for="modelSelect"><i class="fas fa-brain"></i> Modelo:</label>
+                        <select id="modelSelect">
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Más rápido)</option>
+                            <option value="gpt-4o">GPT-4o (Recomendado)</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="aiPromptInput"><i class="fas fa-comment"></i> Tipo de mensaje:</label>
+                        <input type="text" id="aiPromptInput" placeholder="Ej: informativo, gracioso, sarcástico...">
+                        <small class="help-text">Personaliza el estilo de los comentarios de la IA</small>
+                    </div>
+                    <button id="saveApiKeyButton" class="btn primary-btn"><i class="fas fa-save"></i> Guardar Configuración</button>
+                </div>
             </div>
         </div>
+        <div id="toast" class="toast"></div>
     </div>
 
     <script src="script.js"></script>

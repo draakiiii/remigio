@@ -10,21 +10,78 @@ document.addEventListener('DOMContentLoaded', function() {
     updateRanking();
 });
 
+// Función para mostrar toast notifications
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Función para abrir modal
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// Función para cerrar modal
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+    document.body.style.overflow = 'auto';
+}
+
 function setupEventListeners() {
+    // Configuración del modal API
     document.getElementById('settingsButton').addEventListener('click', function() {
-        document.getElementById('apiKeyModal').style.display = 'block';
+        openModal('apiKeyModal');
+    });
+
+    // Cerrar modal con el botón X
+    document.querySelector('.close').addEventListener('click', function() {
+        closeModal('apiKeyModal');
+    });
+
+    // Cerrar modal con backdrop
+    document.querySelector('.modal-backdrop').addEventListener('click', function() {
+        closeModal('apiKeyModal');
+    });
+
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('apiKeyModal');
+            if (modal.style.display === 'block') {
+                closeModal('apiKeyModal');
+            }
+        }
     });
 
     document.getElementById('saveApiKeyButton').onclick = function() {
         const apiKey = document.getElementById('apiKeyInput').value;
         const model = document.getElementById('modelSelect').value;
         const aiPrompt = document.getElementById('aiPromptInput').value || "Informativo. Haz un resumen de cómo va la partida de forma divertida, puedes hacer bromas de todo tipo.";
-        
+
+        if (!apiKey) {
+            showToast('Por favor, introduce una API Key válida', 'error');
+            return;
+        }
+
         localStorage.setItem('openaiApiKey', apiKey);
         localStorage.setItem('openaiModel', model);
         localStorage.setItem('aiPrompt', aiPrompt);
-        
-        document.getElementById('apiKeyModal').style.display = "none";
+
+        closeModal('apiKeyModal');
+        showToast('Configuración guardada correctamente', 'success');
     };
 
     document.getElementById('continueGameButton').addEventListener('click', function() {
@@ -67,6 +124,10 @@ let currentGame = null;
 function showNewGameForm() {
     document.getElementById('home').style.display = 'none';
     document.getElementById('newGame').style.display = 'block';
+
+    // Establecer fecha actual por defecto
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
 }
 
 function loadSettings() {
@@ -278,9 +339,10 @@ function displayCurrentGame() {
 
     const funnyCommentButton = document.createElement('button');
     funnyCommentButton.id = 'jokeButton';
-    funnyCommentButton.textContent = 'Generar comentario';
+    funnyCommentButton.innerHTML = '<i class="fas fa-robot"></i> Generar comentario';
     funnyCommentButton.className = 'btn secondary-btn';
-    funnyCommentButton.style.display = 'none';
+    const hasApiKey = localStorage.getItem('openaiApiKey');
+    funnyCommentButton.style.display = hasApiKey ? 'inline-block' : 'none';
     funnyCommentButton.onclick = readAIText;
     actionButtonsContainer.appendChild(funnyCommentButton);
 
@@ -292,6 +354,22 @@ function displayCurrentGame() {
     actionButtonsContainer.appendChild(exportButton);
 
     allButtonsContainer.appendChild(actionButtonsContainer);
+
+    // Añadir botón "Volver al inicio"
+    const backButtonContainer = document.createElement('div');
+    backButtonContainer.className = 'button-container';
+    const backToHomeButton = document.createElement('button');
+    backToHomeButton.innerHTML = '<i class="fas fa-home"></i> Volver al Inicio';
+    backToHomeButton.className = 'btn secondary-btn';
+    backToHomeButton.onclick = function() {
+        if (confirm('¿Seguro que quieres volver al inicio? Se guardará el progreso de la partida actual.')) {
+            hideAllContainers();
+            showHome();
+        }
+    };
+    backButtonContainer.appendChild(backToHomeButton);
+    allButtonsContainer.appendChild(backButtonContainer);
+
     gameContainer.appendChild(allButtonsContainer);
 }
 
@@ -301,7 +379,7 @@ function addRound(event) {
     const inputs = document.querySelectorAll('input[type="number"]');
     for (let input of inputs) {
         if (input.value === '' || isNaN(input.value)) {
-            alert('Por favor, ingrese un valor numérico para todos los jugadores.');
+            showToast('Por favor, ingrese un valor numérico para todos los jugadores.', 'error');
             return;
         }
     }
@@ -398,9 +476,29 @@ function readScores() {
 }
 
 async function readAIText() {
-    const response = await openaiAPI();
-    const msg = new SpeechSynthesisUtterance(response);
-    window.speechSynthesis.speak(msg);
+    const button = document.getElementById('jokeButton');
+    const originalHTML = button.innerHTML;
+
+    // Añadir loading state
+    button.classList.add('loading');
+    button.disabled = true;
+
+    try {
+        const response = await openaiAPI();
+        if (response) {
+            const msg = new SpeechSynthesisUtterance(response);
+            window.speechSynthesis.speak(msg);
+            showToast('Comentario generado', 'success');
+        }
+    } catch (error) {
+        showToast('Error al generar comentario', 'error');
+        console.error(error);
+    } finally {
+        // Quitar loading state
+        button.classList.remove('loading');
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    }
 }
 
 function exportToCSV() {
@@ -466,8 +564,9 @@ function openaiAPI() {
     const bearer = `Bearer ${apiKey}`;
 
     if (!apiKey) {
-        alert("API Key no configurada. Por favor, configura tu API Key.");
-        return;
+        showToast("API Key no configurada. Por favor, configura tu API Key.", 'error');
+        openModal('apiKeyModal');
+        return Promise.reject('No API key');
     }
 
     const gameSummary = generateGameSummary();
@@ -504,6 +603,8 @@ function openaiAPI() {
     })
     .catch(error => {
         console.error('Error al llamar a OpenAI:', error);
+        showToast('Error al conectar con OpenAI', 'error');
+        throw error;
     });
 }
 
